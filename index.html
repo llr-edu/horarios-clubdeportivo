@@ -28,6 +28,33 @@ function render(){const q=normal(textInput.value),filtered=DATA.filter(r=>(!sele
 function syncURL(extraGrade){const p=new URLSearchParams();const grade=extraGrade||selectedGrade;if(grade)p.set("grado",slug(grade));if(selectedDay)p.set("dia",slug(selectedDay));if(selectedDisc)p.set("disciplina",slug(selectedDisc));const u=location.pathname+(p.toString()?"?"+p:"");history.replaceState(null,"",u)}
 function urlForGrade(g){const u=new URL(location.href);const p=new URLSearchParams();p.set("grado",slug(g));if(selectedDay)p.set("dia",slug(selectedDay));if(selectedDisc)p.set("disciplina",slug(selectedDisc));u.search=p.toString();return u.href}
 async function shareGrade(g){const url=urlForGrade(g);try{if(navigator.share)await navigator.share({title:"Horario · "+g,url});else{await navigator.clipboard.writeText(url);alert("Enlace copiado")}}catch(e){}}
-async function downloadCard(card,g){const actions=card.querySelector(".card-actions");actions.style.display="none";try{const rect=card.getBoundingClientRect(),w=Math.ceil(card.scrollWidth),h=Math.ceil(card.scrollHeight),scale=2;const clone=card.cloneNode(true);clone.querySelector(".card-actions")?.remove();clone.style.width=w+"px";clone.style.margin="0";const css=[...document.styleSheets].flatMap(s=>{try{return[...s.cssRules].map(r=>r.cssText)}catch(e){return[]}}).join("");const html='<div xmlns="http://www.w3.org/1999/xhtml" style="background:#0e0f13;color:#e7e9ee;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:0">'+clone.outerHTML+'<div style="padding:0 14px 14px;color:#8f95a3;font-size:12px">LL. RR. · 2026–2027</div></div>';const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+(h+28)+'"><foreignObject width="100%" height="100%"><style>'+css+'</style>'+html+'</foreignObject></svg>';const img=new Image();const blob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"});const src=URL.createObjectURL(blob);await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=src});const canvas=document.createElement("canvas");canvas.width=w*scale;canvas.height=(h+28)*scale;const ctx=canvas.getContext("2d");ctx.scale(scale,scale);ctx.drawImage(img,0,0);URL.revokeObjectURL(src);const png=await new Promise(ok=>canvas.toBlob(ok,"image/png"));const a=document.createElement("a");a.href=URL.createObjectURL(png);a.download="horario-"+slug(g)+".png";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){alert("No se pudo generar la imagen en este navegador.")}finally{actions.style.display=""}}
+async function downloadCard(card,g){
+  const actions=card.querySelector(".card-actions");
+  actions.style.display="none";
+  try{
+    const scale=2,pad=28,w=Math.max(320,Math.ceil(card.scrollWidth)),h=Math.ceil(card.scrollHeight)+pad;
+    const canvas=document.createElement("canvas");canvas.width=w*scale;canvas.height=h*scale;
+    const ctx=canvas.getContext("2d");ctx.scale(scale,scale);
+    const round=(x,y,W,H,r)=>{ctx.beginPath();ctx.roundRect(x,y,W,H,r);ctx.fill();ctx.stroke()};
+    ctx.fillStyle="#0e0f13";ctx.strokeStyle="#24262e";ctx.lineWidth=1;round(.5,.5,w-1,h-1,16);
+    ctx.font="700 17px system-ui,-apple-system,Segoe UI,Roboto,Arial";ctx.fillStyle="#e7e9ee";
+    ctx.fillText(g,14,32);
+    let y=52;
+    const visible=DATA.filter(r=>r.grade===g&&(!selectedDay||r.day===selectedDay)&&(!selectedDisc||r.disciplines.includes(selectedDisc)));
+    const byDay=new Map();for(const r of visible){if(!byDay.has(r.day))byDay.set(r.day,new Set());r.disciplines.forEach(d=>byDay.get(r.day).add(d))}
+    const days=[...byDay.keys()].sort((a,b)=>DAY_ORDER.indexOf(a)-DAY_ORDER.indexOf(b));
+    ctx.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    const pill=(txt,x,Y,bg,border,fg,padx=9,hh=28)=>{const tw=ctx.measureText(txt).width,ww=tw+padx*2;ctx.fillStyle=bg;ctx.strokeStyle=border;ctx.beginPath();ctx.roundRect(x,Y,ww,hh,10);ctx.fill();ctx.stroke();ctx.fillStyle=fg;ctx.fillText(txt,x+padx,Y+19);return ww};
+    for(const day of days){
+      pill(day,14,y,"#10121a","#24262e","#c9ced8");y+=40;
+      let x=14;const ds=[...byDay.get(day)].sort((a,b)=>a.localeCompare(b,"es"));
+      for(const d of ds){const tw=ctx.measureText(d).width,ww=tw+18;if(x+ww>w-14){x=14;y+=36}pill(d,x,y,"#e91b2c","#e91b2c","#ffffff");x+=ww+8}y+=42;
+    }
+    ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";ctx.fillStyle="#8f95a3";ctx.fillText("LL. RR. · 2026–2027",14,h-12);
+    const png=await new Promise((ok,no)=>canvas.toBlob(b=>b?ok(b):no(new Error("PNG")),"image/png"));
+    const a=document.createElement("a");a.href=URL.createObjectURL(png);a.download="horario-"+slug(g)+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }catch(e){console.error(e);alert("No se pudo generar la imagen. Intenta actualizar la página.")}
+  finally{actions.style.display=""}
+}
 (function(){const p=new URLSearchParams(location.search);selectedGrade=fromSlug(p.get("grado")||"",GRADE_ORDER);selectedDay=fromSlug(p.get("dia")||"",DAY_ORDER);selectedDisc=fromSlug(p.get("disciplina")||"",disciplines);quickGrades.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",selectedGrade?b.dataset.grade===selectedGrade:b.dataset.grade==="Todos"));quick.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.disc===selectedDisc));if(selectedDay)quickDays.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.day===selectedDay));else{const t=getTodayName();if(!location.search&&DAY_ORDER.includes(t)){selectedDay=t;quickDays.querySelector('[data-day="Hoy"]').classList.add("active")}else quickDays.querySelector('[data-day="Todos"]').classList.add("active")}render();if(!location.search&&selectedDay)syncURL()})();
 </script></body></html>
