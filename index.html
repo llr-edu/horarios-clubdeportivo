@@ -231,10 +231,24 @@ async function downloadCard(card,g){
     const [gradeWord,gradeLabel]=gradeNames[g]||[g,""];
 
     // Textos Android 7 incrustados directamente como contornos de la fuente.
-    // No dependen de FontFace, CSS, fuentes instaladas ni del soporte tipográfico de Canvas.
+    // El conjunto completo queda centrado verticalmente respecto al bloque institucional izquierdo.
     const gradeX=w-side-70;
-    drawAndroid7Word(ctx,gradeWord,gradeX,35,140,34,exportText);
-    drawAndroid7Word(ctx,gradeLabel==="año"?"ano":"grado",gradeX,69,78,16,exportMuted);
+    drawAndroid7Word(ctx,gradeWord,gradeX,36,140,30,exportText);
+    drawAndroid7Word(ctx,gradeLabel==="año"?"ano":"grado",gradeX,60,78,14,exportMuted);
+
+    // Reforzar la virgulilla de "año" para que siga siendo visible al reducir el bloque.
+    if(gradeLabel==="año"){
+      ctx.save();
+      ctx.strokeStyle=exportMuted;
+      ctx.lineWidth=1.7;
+      ctx.lineCap="round";
+      ctx.beginPath();
+      ctx.moveTo(gradeX-7,51);
+      ctx.bezierCurveTo(gradeX-4.8,48.5,gradeX-2.6,53.2,gradeX,51);
+      ctx.bezierCurveTo(gradeX+2.6,48.8,gradeX+4.8,53.5,gradeX+7,51);
+      ctx.stroke();
+      ctx.restore();
+    }
     ctx.textAlign="left";
 
     // Línea roja de extremo a extremo
