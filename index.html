@@ -108,14 +108,15 @@ function enableSummaryScroller(summary,type){
     if(Math.abs(dy)>8&&Math.abs(dy)>Math.abs(dx)){
       touchMoved=true;
       e.preventDefault();
+      if(Math.abs(dy)>=24){
+        stepCompactFilter(type,dy<0?1:-1,summary);
+        touchStartY=t.clientY;
+        touchStartX=t.clientX;
+      }
     }
   },{passive:false});
-  summary.addEventListener("touchend",e=>{
-    if(!touchMoved)return;
-    const t=e.changedTouches[0],dy=t.clientY-touchStartY,dx=t.clientX-touchStartX;
-    if(Math.abs(dy)<24||Math.abs(dy)<=Math.abs(dx))return;
-    suppressFilterHeadClickUntil=Date.now()+350;
-    stepCompactFilter(type,dy<0?1:-1,summary);
+  summary.addEventListener("touchend",()=>{
+    if(touchMoved)suppressFilterHeadClickUntil=Date.now()+120;
   },{passive:true});
 }
 enableSummaryScroller(discSummary,"disc");
