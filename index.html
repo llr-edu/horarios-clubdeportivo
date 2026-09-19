@@ -131,17 +131,18 @@ function syncClearSearch(){clearSearch.classList.toggle("show",textInput.value.l
   render();
   syncURL();
 
-  // Al escoger un grado/año concreto, contraer el filtro y llevar a su tarjeta.
-  if(selectedGrade){
-    const gradeCard=document.querySelector('[data-filter-card="grade"]');
-    if(gradeCard)setCardCollapsed(gradeCard,true);
-    setTimeout(()=>{
-      const target=results.querySelector('[data-grade="'+selectedGrade+'"]')||results.firstElementChild;
-      if(!target)return;
-      const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      target.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
-    },120);
-  }
+  // Al escoger cualquier opción, incluido "Todos", contraer el filtro
+  // y llevar al resultado correspondiente (o a la primera tarjeta).
+  const gradeCard=document.querySelector('[data-filter-card="grade"]');
+  if(gradeCard)setCardCollapsed(gradeCard,true);
+  setTimeout(()=>{
+    const target=selectedGrade
+      ? results.querySelector('[data-grade="'+selectedGrade+'"]')||results.firstElementChild
+      : results.firstElementChild;
+    if(!target)return;
+    const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+  },120);
 };quickDays.onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const on=!b.classList.contains("active"),v=b.dataset.day;quickDays.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));if(v==="Hoy"&&on){const t=getTodayName();selectedDay=DAY_ORDER.includes(t)?t:"";b.classList.add("active")}else{selectedDay=(v==="Todos"||!on)?"":v;if(on)b.classList.add("active")}render();syncURL()};textInput.oninput=()=>{syncClearSearch();render()};$("#reset").onclick=()=>{selectedDay=selectedGrade=selectedDisc="";textInput.value="";syncClearSearch();document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));quickGrades.querySelector('[data-grade="Todos"]').classList.add("active");quickDays.querySelector('[data-day="Todos"]').classList.add("active");document.querySelectorAll(".filter-card").forEach(card=>setCardCollapsed(card,true));render();syncURL()};
 function goHome(){
   selectedDisc="";
