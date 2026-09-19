@@ -236,11 +236,13 @@ async function downloadCard(card,g){
     drawAndroid7Word(ctx,gradeWord,gradeX,36,140,30,exportText);
     drawAndroid7Word(ctx,gradeLabel==="año"?"ano":"grado",gradeX,60,78,14,exportMuted);
 
-    // La fuente no trae ñ: usar una raya mínima sobre la n como prueba visual.
+    // La fuente no trae ñ: usar una raya mínima centrada sobre la n.
     if(gradeLabel==="año"){
       ctx.save();
       ctx.fillStyle=exportMuted;
-      ctx.fillRect(gradeX-3.5,51,7,1.1);
+      const anoScale=Math.min(78/4200,14/1200);
+      const nCenter=gradeX+(2000-2100)*anoScale;
+      ctx.fillRect(nCenter-3.5,51,7,1.1);
       ctx.restore();
     }
     ctx.textAlign="left";
