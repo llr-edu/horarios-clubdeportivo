@@ -154,7 +154,7 @@ async function downloadCard(card,g){
   const actions=card.querySelector(".card-actions");actions.style.display="none";
   try{
     const scale=2,w=Math.max(320,Math.ceil(card.scrollWidth)),side=14;
-    const headerH=76,gradeBlockH=48,bottomPad=14,bannerH=18;
+    const headerH=154,bottomPad=14,bannerH=18;
     const css=getComputedStyle(document.documentElement),cv=(name,fallback)=>css.getPropertyValue(name).trim()||fallback;
     const exportBg=cv("--surface","#0e0f13"),exportText=cv("--text","#e7e9ee"),exportMuted=cv("--muted","#8f95a3"),exportEdge=cv("--edge","#24262e"),exportControl=cv("--control2","#10121a"),exportSecondary=cv("--secondary","#c9ced8"),exportBrand=cv("--brand","#e91b2c");
 
@@ -180,7 +180,7 @@ async function downloadCard(card,g){
       contentH+=42;
     }
 
-    const h=headerH+gradeBlockH+contentH+bottomPad+bannerH;
+    const h=headerH+contentH+bottomPad+bannerH;
     const canvas=document.createElement("canvas");
     canvas.width=w*scale;canvas.height=h*scale;
     const ctx=canvas.getContext("2d");ctx.scale(scale,scale);
@@ -191,30 +191,30 @@ async function downloadCard(card,g){
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
 
-    // Encabezado institucional
-    ctx.drawImage(logoImg,side,10,36,44);
-    ctx.fillStyle=exportText;
-    ctx.font="700 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Club Deportivo",58,25);
-    ctx.fillText("LL. RR. · 2026",58,43);
-    ctx.fillStyle=exportMuted;
-    ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Horarios de Deporte, Música y Ciencias",side+6,65);
+    // Encabezado institucional centrado para la imagen descargada
+    ctx.drawImage(logoImg,(w-36)/2,10,36,44);
 
-    // Grado/año centrado
-    const gradeY=headerH+20;
+    ctx.textAlign="center";
     ctx.fillStyle=exportText;
     ctx.font="700 18px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.textAlign="center";
-    ctx.fillText(g,w/2,gradeY);
+    ctx.fillText("Club Deportivo",w/2,77);
+
+    ctx.font="600 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText("LL. RR. · 2026",w/2,97);
+
+    ctx.font="700 20px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText(g,w/2,120);
+
+    ctx.fillStyle=exportMuted;
+    ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText("Horarios de Deporte, Música y Ciencias",w/2,139);
+
+    // Línea roja de extremo a extremo, pegada al bloque institucional
+    ctx.fillStyle=exportBrand;
+    ctx.fillRect(0,146,w,3);
     ctx.textAlign="left";
 
-    // Línea roja de extremo a extremo
-    const dividerY=headerH+gradeBlockH-12;
-    ctx.fillStyle=exportBrand;
-    ctx.fillRect(0,dividerY,w,3);
-
-    let y=headerH+gradeBlockH+6;
+    let y=headerH+8;
     ctx.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
     const pill=(txt,x,Y,bg,border,fg)=>{
       const tw=ctx.measureText(txt).width,ww=tw+18;
