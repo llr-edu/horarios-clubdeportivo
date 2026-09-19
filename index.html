@@ -191,7 +191,7 @@ async function downloadCard(card,g){
     const logoImg=new Image();
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
-    try{await document.fonts.load('32px "Gardiant"');await document.fonts.load('12px "Gardiant"');await document.fonts.ready}catch(e){}
+    try{await document.fonts.load('25px "Gardiant"');await document.fonts.load('12px "Gardiant"');await document.fonts.ready}catch(e){}
 
     // Encabezado institucional: bloque principal a la izquierda
     ctx.drawImage(logoImg,side,16,34,41);
@@ -205,31 +205,29 @@ async function downloadCard(card,g){
     ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
     ctx.fillText("Horarios de Deporte, Música y Ciencias",side+6,72);
 
-    // Grado/año destacado en el espacio derecho
-    const gradeParts=g.split(/\s+/);
-    gradeParts.shift();
-    const gradeLabel=gradeParts.join(" ").toLowerCase();
-    const gradeCompact=normal(g).split(" ")[0];
-    const gradeDigit=(gradeCompact.match(/^\d+/)||[""])[0];
-    const gradeOrdinal=gradeCompact.slice(gradeDigit.length);
+    // Grado/año destacado en el espacio derecho, escrito completo
+    const gradeNames={
+      "1ᵉʳ Grado":["Primer","grado"],
+      "2ᵈᵒ Grado":["Segundo","grado"],
+      "3ᵉʳ Grado":["Tercer","grado"],
+      "4ᵗᵒ Grado":["Cuarto","grado"],
+      "5ᵗᵒ Grado":["Quinto","grado"],
+      "6ᵗᵒ Grado":["Sexto","grado"],
+      "1ᵉʳ Año":["Primer","año"],
+      "2ᵈᵒ Año":["Segundo","año"],
+      "3ᵉʳ Año":["Tercer","año"],
+      "4ᵗᵒ Año":["Cuarto","año"],
+      "5ᵗᵒ Año":["Quinto","año"]
+    };
+    const [gradeWord,gradeLabel]=gradeNames[g]||[g,""];
     const gradeX=w-52;
 
+    ctx.textAlign="center";
     ctx.fillStyle=exportText;
-    ctx.textAlign="left";
-    ctx.font='32px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
-    const digitW=ctx.measureText(gradeDigit).width;
-    ctx.font='12px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
-    const ordinalW=ctx.measureText(gradeOrdinal).width;
-    const totalGradeW=digitW+ordinalW+1;
-    const gradeLeft=gradeX-totalGradeW/2;
-
-    ctx.font='32px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText(gradeDigit,gradeLeft,47);
-    ctx.font='12px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText(gradeOrdinal,gradeLeft+digitW+1,34);
+    ctx.font='25px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
+    ctx.fillText(gradeWord,gradeX,47);
 
     // "grado" / "año" comparte la línea del subtítulo institucional
-    ctx.textAlign="center";
     ctx.fillStyle=exportMuted;
     ctx.font='12px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
     ctx.fillText(gradeLabel,gradeX,72);
