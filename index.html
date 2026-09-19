@@ -191,7 +191,22 @@ async function downloadCard(card,g){
     const logoImg=new Image();
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
-    try{await document.fonts.load('25px "Gardiant"');await document.fonts.load('12px "Gardiant"');await document.fonts.ready}catch(e){}
+    // Cargar Gardiant de forma explícita para asegurar que Canvas la use.
+    let exportFontFamily="Gardiant";
+    try{
+      if(!document.fonts.check('16px "GardiantExport"')){
+        const fontUrl=new URL("assets/gardiant.otf",location.href).href;
+        const fontBytes=await fetch(fontUrl,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Fuente "+r.status);return r.arrayBuffer()});
+        const exportFace=new FontFace("GardiantExport",fontBytes,{style:"normal",weight:"400"});
+        await exportFace.load();
+        document.fonts.add(exportFace);
+      }
+      await document.fonts.load('25px "GardiantExport"');
+      await document.fonts.load('12px "GardiantExport"');
+      exportFontFamily="GardiantExport";
+    }catch(e){
+      console.warn("No se pudo cargar Gardiant para el PNG",e);
+    }
 
     // Encabezado institucional: bloque principal a la izquierda
     ctx.drawImage(logoImg,side,16,34,41);
@@ -224,12 +239,12 @@ async function downloadCard(card,g){
 
     ctx.textAlign="center";
     ctx.fillStyle=exportText;
-    ctx.font='25px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
+    ctx.font='25px "'+exportFontFamily+'",system-ui,-apple-system,Segoe UI,Roboto,Arial';
     ctx.fillText(gradeWord,gradeX,47);
 
     // "grado" / "año" comparte la línea del subtítulo institucional
     ctx.fillStyle=exportMuted;
-    ctx.font='12px "Gardiant",system-ui,-apple-system,Segoe UI,Roboto,Arial';
+    ctx.font='12px "'+exportFontFamily+'",system-ui,-apple-system,Segoe UI,Roboto,Arial';
     ctx.fillText(gradeLabel,gradeX,72);
     ctx.textAlign="left";
 
