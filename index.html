@@ -248,12 +248,11 @@ async function downloadCard(card,g){
     };
     const [gradeWord,gradeLabel]=gradeNames[g]||[g,""];
 
-    // Reservar un área segura a la derecha para que Gardiant nunca se recorte
-    const gradeAreaLeft=Math.max(184,Math.round(w*.48));
+    // Bloque Gardiant anclado a la derecha, con margen suficiente para no recortarse
     const gradeAreaRight=w-side;
-    const gradeX=(gradeAreaLeft+gradeAreaRight)/2;
-    const gradeMaxWidth=Math.max(96,Math.min(150,gradeAreaRight-gradeAreaLeft-8));
-    const labelMaxWidth=Math.max(72,Math.min(88,gradeAreaRight-gradeAreaLeft-18));
+    const gradeX=gradeAreaRight-58;
+    const gradeMaxWidth=Math.min(116,(gradeAreaRight-gradeX)*2-4);
+    const labelMaxWidth=Math.min(78,(gradeAreaRight-gradeX)*2-18);
 
     // Dibujo vectorial directo desde Gardiant para evitar cualquier fallback del navegador
     const gradeKey=gradeWord.toUpperCase();
