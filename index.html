@@ -154,7 +154,7 @@ async function downloadCard(card,g){
   const actions=card.querySelector(".card-actions");actions.style.display="none";
   try{
     const scale=2,w=Math.max(320,Math.ceil(card.scrollWidth)),side=14;
-    const headerH=154,bottomPad=14,bannerH=18;
+    const headerH=92,bottomPad=14,bannerH=18;
     const css=getComputedStyle(document.documentElement),cv=(name,fallback)=>css.getPropertyValue(name).trim()||fallback;
     const exportBg=cv("--surface","#0e0f13"),exportText=cv("--text","#e7e9ee"),exportMuted=cv("--muted","#8f95a3"),exportEdge=cv("--edge","#24262e"),exportControl=cv("--control2","#10121a"),exportSecondary=cv("--secondary","#c9ced8"),exportBrand=cv("--brand","#e91b2c");
 
@@ -191,28 +191,37 @@ async function downloadCard(card,g){
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
 
-    // Encabezado institucional centrado para la imagen descargada
-    ctx.drawImage(logoImg,(w-36)/2,10,36,44);
+    // Encabezado institucional: bloque principal a la izquierda
+    ctx.drawImage(logoImg,side,16,34,41);
 
-    ctx.textAlign="center";
     ctx.fillStyle=exportText;
-    ctx.font="700 18px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Club Deportivo",w/2,77);
-
-    ctx.font="600 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("LL. RR. · 2026",w/2,97);
-
-    ctx.font="700 20px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText(g,w/2,120);
+    ctx.font="700 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText("Club Deportivo",56,31);
+    ctx.fillText("LL. RR. · 2026",56,49);
 
     ctx.fillStyle=exportMuted;
     ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Horarios de Deporte, Música y Ciencias",w/2,139);
+    ctx.fillText("Horarios de Deporte, Música y Ciencias",side+6,72);
 
-    // Línea roja de extremo a extremo, pegada al bloque institucional
-    ctx.fillStyle=exportBrand;
-    ctx.fillRect(0,146,w,3);
+    // Grado/año destacado en el espacio derecho
+    const gradeParts=g.split(/\s+/);
+    const gradeNumber=gradeParts.shift()||g;
+    const gradeLabel=gradeParts.join(" ").toLowerCase();
+    const gradeX=w-52;
+
+    ctx.textAlign="center";
+    ctx.fillStyle=exportText;
+    ctx.font="800 30px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText(gradeNumber,gradeX,42);
+
+    ctx.fillStyle=exportMuted;
+    ctx.font="500 13px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText(gradeLabel,gradeX,61);
     ctx.textAlign="left";
+
+    // Línea roja de extremo a extremo
+    ctx.fillStyle=exportBrand;
+    ctx.fillRect(0,82,w,3);
 
     let y=headerH+8;
     ctx.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
