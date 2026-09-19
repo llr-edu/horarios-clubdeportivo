@@ -29,17 +29,17 @@ try{
     <div class="filter-body"><div class="chips" id="quickDays"></div></div>
   </section>
 </section>
-<section class="panel search-panel"><div class="filters"><div><label for="text">Búsqueda rápida</label><div class="search-wrap"><input id="text" placeholder="Escribe: violín, robótica, 3er, futsal…"><button class="clear-search" id="clearSearch" type="button" aria-label="Limpiar búsqueda">×</button></div></div></div></section>
+<section class="panel search-panel"><div class="filters"><div><label for="text">Búsqueda rápida</label><div class="search-wrap"><input id="text" placeholder="Escribe: violín, robótica, 3ᵉʳ, futsal…"><button class="clear-search" id="clearSearch" type="button" aria-label="Limpiar búsqueda">×</button></div></div></div></section>
 <section id="results" class="grid" aria-live="polite"></section><div id="empty" class="empty" hidden>Sin coincidencias con los filtros actuales.</div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div class="footer"><div class="hint">Haz clic en una <a href="#" class="hint-link" data-open-filter="disc">disciplina</a>, un <a href="#" class="hint-link" data-open-filter="grade">grado/año</a> o un <a href="#" class="hint-link" data-open-filter="day">día</a> para filtrar al instante.</div></div></div>
 <script>
-const normal=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const normal=s=>String(s).replace(/ᵉ/g,"e").replace(/ʳ/g,"r").replace(/ᵈ/g,"d").replace(/ᵒ/g,"o").replace(/ᵗ/g,"t").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const DAY_ORDER=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-const GRADE_ORDER=["1er Grado","2do Grado","3er Grado","4to Grado","5to Grado","6to Grado","1er Año","2do Año","3er Año","4to Año","5to Año"];
+const GRADE_ORDER=["1ᵉʳ Grado","2ᵈᵒ Grado","3ᵉʳ Grado","4ᵗᵒ Grado","5ᵗᵒ Grado","6ᵗᵒ Grado","1ᵉʳ Año","2ᵈᵒ Año","3ᵉʳ Año","4ᵗᵒ Año","5ᵗᵒ Año"];
 const getTodayName=()=>["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()];
 const DATA=[];function add(day,grades,disciplines,type="Deporte"){for(const grade of grades)DATA.push({day,grade,disciplines:[...disciplines],type});}
-const G1="1er Grado",G2="2do Grado",G3="3er Grado",G4="4to Grado",G5="5to Grado",G6="6to Grado",A1="1er Año",A2="2do Año",A3="3er Año",A4="4to Año",A5="5to Año";
+const G1="1ᵉʳ Grado",G2="2ᵈᵒ Grado",G3="3ᵉʳ Grado",G4="4ᵗᵒ Grado",G5="5ᵗᵒ Grado",G6="6ᵗᵒ Grado",A1="1ᵉʳ Año",A2="2ᵈᵒ Año",A3="3ᵉʳ Año",A4="4ᵗᵒ Año",A5="5ᵗᵒ Año";
 add("Lunes",[G1,G2],["Béisbol","Futsal"]);add("Lunes",[G3,G4],["Ajedrez","Tenis"]);add("Lunes",[G5,G6],["Atletismo"]);add("Martes",[G1,G2],["Baloncesto"]);add("Martes",[G3,G4],["Béisbol","Futsal"]);add("Martes",[G5,G6],["Ajedrez","Tenis"]);add("Miércoles",[G1,G2],["Atletismo","Ajedrez"]);add("Miércoles",[G3,G4],["Fútbol campo"]);add("Miércoles",[G5,G6],["Béisbol","Futsal"]);add("Jueves",[G1,G2],["Fútbol campo"]);add("Jueves",[G3,G4],["Atletismo"]);add("Jueves",[G5,G6],["Baloncesto"]);add("Viernes",[G1,G2],["Tenis"]);add("Viernes",[G3,G4],["Baloncesto"]);add("Viernes",[G5,G6],["Fútbol campo"]);add("Sábado",[G1,G2,G3,G4,G5,G6],["Encuentros deportivos"]);
 add("Lunes",[A1,A2],["Baloncesto","Voleibol"]);add("Lunes",[A3,A4,A5],["Fútbol campo"]);add("Martes",[A1,A2],["Atletismo","Fútbol campo"]);add("Martes",[A3,A4,A5],["Voleibol"]);add("Miércoles",[A1,A2],["Tenis"]);add("Miércoles",[A3,A4,A5],["Baloncesto"]);add("Jueves",[A1,A2],["Futsal","Ajedrez"]);add("Jueves",[A3,A4,A5],["Béisbol","Voleibol","Tenis"]);add("Viernes",[A1,A2],["Béisbol"]);add("Viernes",[A3,A4,A5],["Atletismo","Futsal","Ajedrez"]);add("Sábado",[A1,A2,A3,A4,A5],["Encuentros deportivos"]);
 add("Lunes",[G1,G2],["Iniciación Musical"],"Música");add("Martes",[G3,G4],["Violín"],"Música");add("Miércoles",[G5,G6],["Violín","Percusión"],"Música");add("Martes",[G5,G6],["Cuatro","Gaita"],"Música");add("Jueves",[G1,G2,G3,G4],["Gaita"],"Música");add("Martes",[G3,G4,G5,G6],["Teclado"],"Música");add("Jueves",[G5,G6],["Guitarra Acústica"],"Música");add("Martes",[G1,G2],["Astronomía"],"Ciencias");add("Miércoles",[G3,G4],["Astronomía"],"Ciencias");add("Jueves",[G5,G6],["Astronomía"],"Ciencias");add("Lunes",[G1,G2],["Robótica"],"Ciencias");add("Martes",[G3,G4],["Robótica"],"Ciencias");add("Miércoles",[G5,G6],["Robótica"],"Ciencias");
@@ -67,33 +67,107 @@ async function shareGrade(g){const url=urlForGrade(g);copyLink(url);try{if(navig
 async function downloadCard(card,g){
   const actions=card.querySelector(".card-actions");actions.style.display="none";
   try{
-    const scale=2,w=Math.max(320,Math.ceil(card.scrollWidth)),side=14,top=72,bottom=14;
+    const scale=2,w=Math.max(320,Math.ceil(card.scrollWidth)),side=14;
+    const headerH=76,gradeBlockH=48,bottomPad=14,bannerH=18;
     const css=getComputedStyle(document.documentElement),cv=(name,fallback)=>css.getPropertyValue(name).trim()||fallback;
     const exportBg=cv("--surface","#0e0f13"),exportText=cv("--text","#e7e9ee"),exportMuted=cv("--muted","#8f95a3"),exportEdge=cv("--edge","#24262e"),exportControl=cv("--control2","#10121a"),exportSecondary=cv("--secondary","#c9ced8"),exportBrand=cv("--brand","#e91b2c");
+
     const visible=DATA.filter(r=>r.grade===g&&(!selectedDay||r.day===selectedDay)&&(!selectedDisc||r.disciplines.includes(selectedDisc)));
-    const byDay=new Map();for(const r of visible){if(!byDay.has(r.day))byDay.set(r.day,new Set());r.disciplines.forEach(d=>byDay.get(r.day).add(d))}
+    const byDay=new Map();
+    for(const r of visible){
+      if(!byDay.has(r.day))byDay.set(r.day,new Set());
+      r.disciplines.forEach(d=>byDay.get(r.day).add(d));
+    }
     const days=[...byDay.keys()].sort((a,b)=>DAY_ORDER.indexOf(a)-DAY_ORDER.indexOf(b));
-    const measure=document.createElement("canvas").getContext("2d");measure.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    let contentH=48;
-    for(const day of days){contentH+=40;let x=side;for(const d of [...byDay.get(day)].sort((a,b)=>a.localeCompare(b,"es"))){const ww=measure.measureText(d).width+18;if(x+ww>w-side){x=side;contentH+=36}x+=ww+8}contentH+=42}
-    const h=top+contentH+bottom;
-    const canvas=document.createElement("canvas");canvas.width=w*scale;canvas.height=h*scale;const ctx=canvas.getContext("2d");ctx.scale(scale,scale);
+
+    const measure=document.createElement("canvas").getContext("2d");
+    measure.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    let contentH=0;
+    for(const day of days){
+      contentH+=40;
+      let x=side;
+      for(const d of [...byDay.get(day)].sort((a,b)=>a.localeCompare(b,"es"))){
+        const ww=measure.measureText(d).width+18;
+        if(x+ww>w-side){x=side;contentH+=36}
+        x+=ww+8;
+      }
+      contentH+=42;
+    }
+
+    const h=headerH+gradeBlockH+contentH+bottomPad+bannerH;
+    const canvas=document.createElement("canvas");
+    canvas.width=w*scale;canvas.height=h*scale;
+    const ctx=canvas.getContext("2d");ctx.scale(scale,scale);
+
     ctx.fillStyle=exportBg;ctx.fillRect(0,0,w,h);
+
     const logoImg=new Image();
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
+
+    // Encabezado institucional
     ctx.drawImage(logoImg,side,10,36,44);
-    ctx.fillStyle=exportText;ctx.font="700 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Club Deportivo · LL. RR. · 2026",58,29);
-    ctx.fillStyle=exportMuted;ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    ctx.fillText("Horarios de Deporte, Música y Ciencias",58,47);
-    ctx.font="700 17px system-ui,-apple-system,Segoe UI,Roboto,Arial";ctx.fillStyle=exportText;ctx.fillText(g,side,top+20);
-    let y=top+40;ctx.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
-    const pill=(txt,x,Y,bg,border,fg)=>{const tw=ctx.measureText(txt).width,ww=tw+18;ctx.fillStyle=bg;ctx.strokeStyle=border;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,Y,ww,28,10);ctx.fill();ctx.stroke();ctx.fillStyle=fg;ctx.fillText(txt,x+9,Y+19);return ww};
-    for(const day of days){pill(day,side,y,exportControl,exportEdge,exportSecondary);y+=40;let x=side;for(const d of [...byDay.get(day)].sort((a,b)=>a.localeCompare(b,"es"))){const ww=ctx.measureText(d).width+18;if(x+ww>w-side){x=side;y+=36}pill(d,x,y,exportBrand,exportBrand,"#fff");x+=ww+8}y+=42}
-    
-    const png=await new Promise((ok,no)=>canvas.toBlob(b=>b?ok(b):no(new Error("PNG")),"image/png"));const a=document.createElement("a");a.href=URL.createObjectURL(png);a.download="horario-"+slug(g)+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  }catch(e){console.error(e);alert("No se pudo generar la imagen. Intenta actualizar la página.")}finally{actions.style.display=""}
+    ctx.fillStyle=exportText;
+    ctx.font="700 15px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText("Club Deportivo",58,25);
+    ctx.fillText("LL. RR. · 2026",58,43);
+    ctx.fillStyle=exportMuted;
+    ctx.font="12px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.fillText("Horarios de Deporte, Música y Ciencias",side,65);
+
+    // Grado/año centrado
+    const gradeY=headerH+22;
+    ctx.fillStyle=exportText;
+    ctx.font="700 18px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.textAlign="center";
+    ctx.fillText(g,w/2,gradeY);
+    ctx.textAlign="left";
+
+    // Línea roja de extremo a extremo
+    const dividerY=headerH+gradeBlockH-4;
+    ctx.fillStyle=exportBrand;
+    ctx.fillRect(0,dividerY,w,3);
+
+    let y=headerH+gradeBlockH+14;
+    ctx.font="14px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    const pill=(txt,x,Y,bg,border,fg)=>{
+      const tw=ctx.measureText(txt).width,ww=tw+18;
+      ctx.fillStyle=bg;ctx.strokeStyle=border;ctx.lineWidth=1;
+      ctx.beginPath();ctx.roundRect(x,Y,ww,28,10);ctx.fill();ctx.stroke();
+      ctx.fillStyle=fg;ctx.fillText(txt,x+9,Y+19);
+      return ww;
+    };
+
+    for(const day of days){
+      pill(day,side,y,exportControl,exportEdge,exportSecondary);
+      y+=40;
+      let x=side;
+      for(const d of [...byDay.get(day)].sort((a,b)=>a.localeCompare(b,"es"))){
+        const ww=ctx.measureText(d).width+18;
+        if(x+ww>w-side){x=side;y+=36}
+        pill(d,x,y,exportBrand,exportBrand,"#fff");
+        x+=ww+8;
+      }
+      y+=42;
+    }
+
+    // Banner inferior institucional: mitad negro, mitad rojo
+    const bannerY=h-bannerH;
+    ctx.fillStyle="#111111";ctx.fillRect(0,bannerY,w/2,bannerH);
+    ctx.fillStyle=exportBrand;ctx.fillRect(w/2,bannerY,w/2,bannerH);
+
+    const png=await new Promise((ok,no)=>canvas.toBlob(b=>b?ok(b):no(new Error("PNG")),"image/png"));
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(png);
+    a.download="horario-"+slug(g)+".png";
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }catch(e){
+    console.error(e);
+    alert("No se pudo generar la imagen. Intenta actualizar la página.");
+  }finally{
+    actions.style.display="";
+  }
 }
 (function(){const p=new URLSearchParams(location.search),hasSharedFilters=["grado","dia","disciplina"].some(k=>p.has(k));selectedGrade=fromSlug(p.get("grado")||"",GRADE_ORDER);selectedDay=fromSlug(p.get("dia")||"",DAY_ORDER);selectedDisc=fromSlug(p.get("disciplina")||"",disciplines);quickGrades.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",selectedGrade?b.dataset.grade===selectedGrade:b.dataset.grade==="Todos"));quick.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.disc===selectedDisc));if(selectedDay)quickDays.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.day===selectedDay));else{const t=getTodayName();if(!location.search&&DAY_ORDER.includes(t)){selectedDay=t;quickDays.querySelector('[data-day="Hoy"]').classList.add("active")}else quickDays.querySelector('[data-day="Todos"]').classList.add("active")}document.querySelectorAll(".filter-card").forEach(card=>setCardCollapsed(card,hasSharedFilters));syncClearSearch();render();scrollToInitialResults()})();
 </script></body></html>
