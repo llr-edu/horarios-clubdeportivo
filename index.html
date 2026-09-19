@@ -247,13 +247,19 @@ async function downloadCard(card,g){
       "5ᵗᵒ Año":["Quinto","año"]
     };
     const [gradeWord,gradeLabel]=gradeNames[g]||[g,""];
-    const gradeX=w-52;
+
+    // Reservar un área segura a la derecha para que Gardiant nunca se recorte
+    const gradeAreaLeft=Math.max(184,Math.round(w*.48));
+    const gradeAreaRight=w-side;
+    const gradeX=(gradeAreaLeft+gradeAreaRight)/2;
+    const gradeMaxWidth=Math.max(96,Math.min(150,gradeAreaRight-gradeAreaLeft-8));
+    const labelMaxWidth=Math.max(72,Math.min(88,gradeAreaRight-gradeAreaLeft-18));
 
     // Dibujo vectorial directo desde Gardiant para evitar cualquier fallback del navegador
     const gradeKey=gradeWord.toUpperCase();
     const labelKey=gradeLabel==="año"?"AÑO":"GRADO";
-    drawGardiantVector(ctx,gradeKey,gradeX,49,40,exportText,150);
-    drawGardiantVector(ctx,labelKey,gradeX,73,18,exportMuted,88);
+    drawGardiantVector(ctx,gradeKey,gradeX,49,40,exportText,gradeMaxWidth);
+    drawGardiantVector(ctx,labelKey,gradeX,73,18,exportMuted,labelMaxWidth);
     ctx.textAlign="left";
 
     // Línea roja de extremo a extremo
