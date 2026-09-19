@@ -192,17 +192,22 @@ async function downloadCard(card,g){
     logoImg.src=new URL("assets/logo-los-robles.png",location.href).href;
     await new Promise((ok,no)=>{if(logoImg.complete&&logoImg.naturalWidth)ok();else{logoImg.onload=ok;logoImg.onerror=no}});
     // Cargar Android 7 de forma explícita para que Canvas use la fuente real.
+    // No usamos document.fonts.check(): puede devolver true aunque solo exista un fallback.
     let exportFontFamily="Android7";
     try{
-      if(!document.fonts.check('16px "Android7Export"')){
+      if(!window.__android7ExportFace){
         const fontUrl=new URL("assets/android-7.woff",location.href).href;
         const fontBytes=await fetch(fontUrl,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Fuente "+r.status);return r.arrayBuffer()});
         const exportFace=new FontFace("Android7Export",fontBytes,{style:"normal",weight:"400"});
         await exportFace.load();
         document.fonts.add(exportFace);
+        window.__android7ExportFace=exportFace;
+      }else{
+        await window.__android7ExportFace.loaded;
       }
-      await document.fonts.load('26px "Android7Export"');
-      await document.fonts.load('12px "Android7Export"');
+      await document.fonts.ready;
+      await document.fonts.load('26px "Android7Export"',"Primer Segundo Tercer Cuarto Quinto Sexto");
+      await document.fonts.load('12px "Android7Export"',"grado ano");
       exportFontFamily="Android7Export";
     }catch(e){
       console.warn("No se pudo cargar Android 7 para el PNG",e);
