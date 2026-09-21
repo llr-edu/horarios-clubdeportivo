@@ -36,11 +36,19 @@ jobs:
           html=Path("index.html").read_text(encoding="utf-8")
           marker="const ANDROID7_WORDS="
           start=html.index(marker)+len(marker)
-          end=html.index("const CARD_GRADE_NAMES",start)
-          raw=html[start:end].rstrip()
-          if raw.endswith(";"):
-              raw=raw[:-1]
-          words=json.loads(raw)
+          depth=0
+          end=None
+          for pos,ch in enumerate(html[start:],start=start):
+              if ch=="{":
+                  depth+=1
+              elif ch=="}":
+                  depth-=1
+                  if depth==0:
+                      end=pos+1
+                      break
+          if end is None:
+              raise RuntimeError("ANDROID7_WORDS object did not close")
+          words=json.loads(html[start:end])
 
           # This image is intact and serves only as the institutional shell:
           # header, background and red footer.
