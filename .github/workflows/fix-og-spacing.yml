@@ -19,87 +19,92 @@ jobs:
           python-version: "3.12"
 
       - name: Install image tools
-        run: python -m pip install pillow fonttools
+        run: python -m pip install pillow cairosvg
 
       - name: Rebuild preview images
         run: |
           python - <<'PY'
           from pathlib import Path
-          from PIL import Image, ImageDraw, ImageFont
-          from fontTools.ttLib import TTFont
+          from PIL import Image, ImageDraw
+          from io import BytesIO
+          import cairosvg, json, re
 
           BG=(13,14,17)
-          WHITE=(237,239,244)
           GRAY=(153,158,170)
 
-          # Convert the existing Android 7 WOFF to a temporary TTF that Pillow can draw.
-          ft=TTFont("assets/android-7.woff")
-          ft.flavor=None
-          ttf="/tmp/android7.ttf"
-          ft.save(ttf)
+          # Reuse the exact vector paths already embedded in the site itself.
+          html=Path("index.html").read_text(encoding="utf-8")
+          match=re.search(
+              r'const ANDROID7_WORDS=(\{.*?\});\s*function android7SvgWord',
+              html,
+              re.S
+          )
+          if not match:
+              raise RuntimeError("ANDROID7_WORDS not found")
+          words=json.loads(match.group(1))
 
-          # 6to-grado is our intact template: preserve the exact institutional
-          # header, background and red footer, and rebuild only the grade artwork.
+          # This image is intact and serves only as the institutional shell:
+          # header, background and red footer.
           template=Image.open("assets/og/6to-grado.png").convert("RGB")
-          template_draw=ImageDraw.Draw(template)
 
           previews={
-              "1er-grado":("PRIMER","grado"),
-              "2do-grado":("SEGUNDO","grado"),
-              "3er-grado":("TERCER","grado"),
-              "4to-grado":("CUARTO","grado"),
-              "5to-grado":("QUINTO","grado"),
-              "6to-grado":("SEXTO","grado"),
-              "1er-ano":("PRIMER","año"),
-              "2do-ano":("SEGUNDO","año"),
-              "3er-ano":("TERCER","año"),
-              "4to-ano":("CUARTO","año"),
-              "5to-ano":("QUINTO","año"),
+              "1er-grado":("Primer","grado"),
+              "2do-grado":("Segundo","grado"),
+              "3er-grado":("Tercer","grado"),
+              "4to-grado":("Cuarto","grado"),
+              "5to-grado":("Quinto","grado"),
+              "6to-grado":("Sexto","grado"),
+              "1er-ano":("Primer","ano"),
+              "2do-ano":("Segundo","ano"),
+              "3er-ano":("Tercer","ano"),
+              "4to-ano":("Cuarto","ano"),
+              "5to-ano":("Quinto","ano"),
           }
 
-          probe=ImageDraw.Draw(Image.new("RGB",(2,2)))
+          def render_word(key, max_w, max_h, color):
+              item=words[key]
+              scale=min(max_w/item["w"], max_h/item["h"])
+              out_w=max(1,round(item["w"]*scale))
+              out_h=max(1,round(item["h"]*scale))
+              rgb="#%02x%02x%02x" % color
+              svg=f'''<svg xmlns="http://www.w3.org/2000/svg"
+                  width="{out_w}" height="{out_h}"
+                  viewBox="0 0 {item["w"]} {item["h"]}">
+                  <g transform="translate(0 {item["h"]}) scale(1 -1)">
+                    <path d="{item["d"]}" fill="{rgb}"/>
+                  </g>
+              </svg>'''
+              data=cairosvg.svg2png(
+                  bytestring=svg.encode("utf-8"),
+                  output_width=out_w,
+                  output_height=out_h
+              )
+              return Image.open(BytesIO(data)).convert("RGBA")
 
-          def fit_font(text, max_size=84, max_width=430):
-              size=max_size
-              while size>12:
-                  font=ImageFont.truetype(ttf,size)
-                  if probe.textlength(text,font=font) <= max_width:
-                      return font
-                  size-=1
-              return ImageFont.truetype(ttf,size)
-
-          for slug,(main,label) in previews.items():
+          for slug,(main_key,label_key) in previews.items():
               im=template.copy()
               d=ImageDraw.Draw(im)
 
-              # Clear only the typography area. The header and red bar stay untouched.
-              d.rectangle((0,88,599,279),fill=BG)
+              # Rebuild only the central grade artwork.
+              d.rectangle((0,88,599,279), fill=BG)
 
-              main_font=fit_font(main)
-              main_bbox=d.textbbox((0,0),main,font=main_font)
-              main_w=d.textlength(main,font=main_font)
-              main_x=(600-main_w)/2
-              main_top=112
-              d.text((main_x,main_top-main_bbox[1]),main,font=main_font,fill=WHITE)
+              main=render_word(main_key,430,50,(237,239,244))
+              mx=(600-main.width)//2
+              my=114
+              im.paste(main,(mx,my),main)
 
-              label_text="ano" if label=="año" else "GRADO"
-              label_font=ImageFont.truetype(ttf,44)
-              label_bbox=d.textbbox((0,0),label_text,font=label_font)
-              label_w=d.textlength(label_text,font=label_font)
-              label_x=(600-label_w)/2
+              # Reduce the excessive gap between the two words.
+              label=render_word(label_key,170 if label_key=="grado" else 100,27,GRAY)
+              lx=(600-label.width)//2
+              ly=190
+              im.paste(label,(lx,ly),label)
 
-              # Bring the second word substantially closer to the first one.
-              label_top=187
-              d.text((label_x,label_top-label_bbox[1]),label_text,font=label_font,fill=GRAY)
-
-              if label=="año":
-                  # The font has no ñ. Draw a short tilde immediately above the n,
-                  # rather than leaving the old detached dash high above the word.
-                  before_n=d.textlength("a",font=label_font)
-                  n_width=d.textlength("n",font=label_font)
-                  n_center=label_x+before_n+(n_width/2)
+              if label_key=="ano":
+                  # The custom alphabet does not include ñ. Put the short mark
+                  # immediately above the n, not detached high above the word.
+                  cx=round(lx + label.width*0.48)
                   d.rounded_rectangle(
-                      (n_center-6,label_top-7,n_center+6,label_top-5),
+                      (cx-6,ly-7,cx+6,ly-5),
                       radius=1,
                       fill=GRAY
                   )
