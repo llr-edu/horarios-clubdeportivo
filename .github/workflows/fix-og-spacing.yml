@@ -36,8 +36,11 @@ jobs:
           html=Path("index.html").read_text(encoding="utf-8")
           marker="const ANDROID7_WORDS="
           start=html.index(marker)+len(marker)
-          end=html.index(";\nconst CARD_GRADE_NAMES",start)
-          words=json.loads(html[start:end])
+          end=html.index("const CARD_GRADE_NAMES",start)
+          raw=html[start:end].rstrip()
+          if raw.endswith(";"):
+              raw=raw[:-1]
+          words=json.loads(raw)
 
           # This image is intact and serves only as the institutional shell:
           # header, background and red footer.
