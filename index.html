@@ -332,7 +332,16 @@ async function downloadCard(card,g){
       return ww;
     };
 
-    for(const day of days){
+    for(const [dayIndex,day] of days.entries()){
+      // Separador superior entre días. El primer día visible no lo necesita:
+      // arriba ya está la línea roja del encabezado.
+      if(dayIndex>0){
+        ctx.fillStyle=exportEdge;
+        ctx.fillRect(side,y-7,w-(side*2),1);
+      }
+
+      // En la imagen descargada los días conservan su estilo neutro:
+      // el resaltado dorado de "hoy" es exclusivo de la vista normal.
       pill(day,side,y,exportControl,exportEdge,exportSecondary);
       y+=40;
       let x=side;
