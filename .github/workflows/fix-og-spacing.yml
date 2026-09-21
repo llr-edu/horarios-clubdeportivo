@@ -34,14 +34,10 @@ jobs:
 
           # Reuse the exact vector paths already embedded in the site itself.
           html=Path("index.html").read_text(encoding="utf-8")
-          match=re.search(
-              r'const ANDROID7_WORDS=(\{.*?\});\s*function android7SvgWord',
-              html,
-              re.S
-          )
-          if not match:
-              raise RuntimeError("ANDROID7_WORDS not found")
-          words=json.loads(match.group(1))
+          marker="const ANDROID7_WORDS="
+          start=html.index(marker)+len(marker)
+          end=html.index(";\nconst CARD_GRADE_NAMES",start)
+          words=json.loads(html[start:end])
 
           # This image is intact and serves only as the institutional shell:
           # header, background and red footer.
