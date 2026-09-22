@@ -61,6 +61,22 @@ add("Lunes",[G1,G2],["Béisbol","Futsal"]);add("Lunes",[G3,G4],["Ajedrez","Tenis
 add("Lunes",[A1,A2],["Baloncesto","Voleibol"]);add("Lunes",[A3,A4,A5],["Fútbol campo"]);add("Martes",[A1,A2],["Atletismo","Fútbol campo"]);add("Martes",[A3,A4,A5],["Voleibol"]);add("Miércoles",[A1,A2],["Tenis"]);add("Miércoles",[A3,A4,A5],["Baloncesto"]);add("Jueves",[A1,A2],["Futsal","Ajedrez"]);add("Jueves",[A3,A4,A5],["Béisbol","Voleibol","Tenis"]);add("Viernes",[A1,A2],["Béisbol"]);add("Viernes",[A3,A4,A5],["Atletismo","Futsal","Ajedrez"]);add("Sábado",[A1,A2,A3,A4,A5],["Encuentros deportivos"]);
 add("Lunes",[G1,G2],["Iniciación Musical"],"Música");add("Martes",[G3,G4],["Violín"],"Música");add("Miércoles",[G5,G6],["Violín","Percusión"],"Música");add("Martes",[G5,G6],["Cuatro","Gaita"],"Música");add("Jueves",[G1,G2,G3,G4],["Gaita"],"Música");add("Martes",[G3,G4,G5,G6],["Teclado"],"Música");add("Jueves",[G5,G6],["Guitarra Acústica"],"Música");add("Martes",[G1,G2],["Astronomía"],"Ciencias");add("Miércoles",[G3,G4],["Astronomía"],"Ciencias");add("Jueves",[G5,G6],["Astronomía"],"Ciencias");add("Lunes",[G1,G2],["Robótica"],"Ciencias");add("Martes",[G3,G4],["Robótica"],"Ciencias");add("Miércoles",[G5,G6],["Robótica"],"Ciencias");
 add("Jueves",[A1,A2],["Violín"],"Música");add("Viernes",[A3,A4,A5],["Violín"],"Música");add("Miércoles",[A1,A2,A3,A4,A5],["Percusión"],"Música");add("Martes",[A1,A2,A3,A4,A5],["Gaita"],"Música");add("Viernes",[A1,A2,A3,A4,A5],["Teclado","Guitarra Eléctrica","Bajo Eléctrico","Ensamble Musical"],"Música");add("Jueves",[A1,A2,A3,A4,A5],["Guitarra Acústica"],"Música");add("Lunes",[A1,A2],["Astronomía"],"Ciencias");add("Viernes",[A3,A4,A5],["Astronomía"],"Ciencias");add("Jueves",[A1,A2],["Robótica"],"Ciencias");add("Viernes",[A3,A4,A5],["Robótica"],"Ciencias");
+
+// Horario actualizado exclusivamente para 3.er Grado.
+// Se eliminan sus registros anteriores sin alterar ningún otro grado/año.
+for(let i=DATA.length-1;i>=0;i--){if(DATA[i].grade===G3)DATA.splice(i,1)}
+add("Lunes",[G3],["Béisbol","Ajedrez","Tenis","Futsal"]);
+add("Martes",[G3],["Béisbol","Futsal"]);
+add("Martes",[G3],["Robótica"],"Ciencias");
+add("Martes",[G3],["Violín","Teclado"],"Música");
+add("Miércoles",[G3],["Fútbol campo"]);
+add("Miércoles",[G3],["Violín"],"Música");
+add("Miércoles",[G3],["Astronomía"],"Ciencias");
+add("Jueves",[G3],["Atletismo"]);
+add("Jueves",[G3],["Gaita"],"Música");
+add("Jueves",[G3],["Robótica"],"Ciencias");
+add("Viernes",[G3],["Baloncesto"]);
+add("Sábado",[G3],["Encuentros deportivos"]);
 let selectedDay="",selectedGrade="",selectedDisc="";const slug=s=>normal(s).replace(/ /g,"-");const fromSlug=(v,items)=>items.find(x=>slug(x)===v)||"";const $=s=>document.querySelector(s),results=$("#results"),empty=$("#empty"),textInput=$("#text"),clearSearch=$("#clearSearch"),quick=$("#quick"),quickGrades=$("#quickGrades"),quickDays=$("#quickDays"),discSummary=$("#discSummary"),gradeSummary=$("#gradeSummary"),daySummary=$("#daySummary"),toast=$("#toast");
 const themeButtons=[...document.querySelectorAll(".theme-option")];
 function syncThemeButtons(){const theme=document.documentElement.dataset.theme||"dark";themeButtons.forEach(b=>{const active=b.dataset.themeChoice===theme;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))})}
