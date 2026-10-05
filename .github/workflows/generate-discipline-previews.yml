@@ -21,7 +21,7 @@ jobs:
       - name: Install image tools
         run: |
           python -m pip install pillow
-          curl -L --fail --silent --show-error             "https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf"             -o /tmp/orbitron.ttf || true
+          curl -L --fail --silent --show-error "https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf" -o /tmp/orbitron.ttf || true
 
       - name: Generate discipline pages and preview images
         run: |
@@ -36,35 +36,17 @@ jobs:
           GRAY=(153,158,170)
 
           disciplines=[
-              "Ajedrez",
-              "Astronomía",
-              "Atletismo",
-              "Bajo Eléctrico",
-              "Baloncesto",
-              "Béisbol",
-              "Cuatro",
-              "Encuentros deportivos",
-              "Ensamble Musical",
-              "Fútbol campo",
-              "Futsal",
-              "Gaita",
-              "Guitarra Acústica",
-              "Guitarra Eléctrica",
-              "Iniciación Musical",
-              "Karate",
-              "Percusión",
-              "Robótica",
-              "Teclado",
-              "Tenis",
-              "Violín",
-              "Voleibol",
+              "Ajedrez","Astronomía","Atletismo","Bajo Eléctrico","Baloncesto",
+              "Béisbol","Cuatro","Encuentros deportivos","Ensamble Musical",
+              "Fútbol campo","Futsal","Gaita","Guitarra Acústica",
+              "Guitarra Eléctrica","Iniciación Musical","Karate","Percusión",
+              "Robótica","Teclado","Tenis","Violín","Voleibol"
           ]
 
           def slug(text):
               s=unicodedata.normalize("NFD",text)
               s="".join(ch for ch in s if unicodedata.category(ch)!="Mn")
-              s=s.lower()
-              s=re.sub(r"[^a-z0-9]+","-",s).strip("-")
+              s=re.sub(r"[^a-z0-9]+","-",s.lower()).strip("-")
               return s
 
           template=Image.open("assets/og/general.png").convert("RGB")
@@ -89,41 +71,33 @@ jobs:
               words=text.split()
               if len(words)<=1:
                   return [text]
-              best=None
+              choices=[]
               for i in range(1,len(words)):
                   a=" ".join(words[:i]); b=" ".join(words[i:])
-                  score=abs(len(a)-len(b))
-                  if best is None or score<best[0]:
-                      best=(score,a,b)
-              return [best[1],best[2]]
+                  choices.append((abs(len(a)-len(b)),a,b))
+              _,a,b=min(choices,key=lambda x:x[0])
+              return [a,b]
 
           for name in disciplines:
               s=slug(name)
               im=template.copy()
               d=ImageDraw.Draw(im)
-
-              # Keep the institutional header and red footer from the general card.
               d.rectangle((0,88,599,279),fill=BG)
 
               title=name.upper()
               font=fit(d,title,500)
               box=d.textbbox((0,0),title,font=font)
               width=box[2]-box[0]
-
-              lines=[title]
-              if width>500 or len(title)>20:
-                  lines=split_balanced(title)
+              lines=[title] if width<=500 and len(title)<=20 else split_balanced(title)
 
               if len(lines)==1:
                   font=fit(d,lines[0],500,60,27)
                   box=d.textbbox((0,0),lines[0],font=font)
                   x=(600-(box[2]-box[0]))/2
-                  y=129-box[1]
-                  d.text((x,y),lines[0],font=font,fill=WHITE)
+                  d.text((x,129-box[1]),lines[0],font=font,fill=WHITE)
               else:
-                  fonts=[fit(d,line,500,48,24) for line in lines]
-                  tops=[119,166]
-                  for line,font,top in zip(lines,fonts,tops):
+                  for line,top in zip(lines,[119,166]):
+                      font=fit(d,line,500,48,24)
                       box=d.textbbox((0,0),line,font=font)
                       x=(600-(box[2]-box[0]))/2
                       d.text((x,top-box[1]),line,font=font,fill=WHITE)
@@ -145,41 +119,43 @@ jobs:
               page_url=f"{ROOT}disciplina/{s}/"
               image_url=f"{ROOT}assets/og/disciplines/{s}.png"
 
-              page=f"""<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title_meta}</title>
-<meta name="description" content="{desc}">
-<link rel="canonical" href="{page_url}">
-<link rel="image_src" href="{image_url}">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Club Deportivo LL. RR.">
-<meta property="og:title" content="{title_meta}">
-<meta property="og:description" content="{desc}">
-<meta property="og:url" content="{page_url}">
-<meta property="og:image" content="{image_url}">
-<meta property="og:image:secure_url" content="{image_url}">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="600">
-<meta property="og:image:height" content="315">
-<meta property="og:image:alt" content="{title_meta}">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{title_meta}">
-<meta name="twitter:description" content="{desc}">
-<meta name="twitter:image" content="{image_url}">
-<script>
-(function(){{
-  var p=new URLSearchParams(location.search);
-  p.set("disciplina","{s}");
-  location.replace("../../?"+p.toString());
-}})();
-</script>
-<noscript><meta http-equiv="refresh" content="0;url=../../?disciplina={s}"></noscript>
-</head>
-<body></body>
-</html>"""
+              page=(
+                  "<!doctype html>\n"
+                  "<html lang=\"es\">\n"
+                  "<head>\n"
+                  "<meta charset=\"utf-8\">\n"
+                  "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
+                  f"<title>{title_meta}</title>\n"
+                  f"<meta name=\"description\" content=\"{desc}\">\n"
+                  f"<link rel=\"canonical\" href=\"{page_url}\">\n"
+                  f"<link rel=\"image_src\" href=\"{image_url}\">\n"
+                  "<meta property=\"og:type\" content=\"website\">\n"
+                  "<meta property=\"og:site_name\" content=\"Club Deportivo LL. RR.\">\n"
+                  f"<meta property=\"og:title\" content=\"{title_meta}\">\n"
+                  f"<meta property=\"og:description\" content=\"{desc}\">\n"
+                  f"<meta property=\"og:url\" content=\"{page_url}\">\n"
+                  f"<meta property=\"og:image\" content=\"{image_url}\">\n"
+                  f"<meta property=\"og:image:secure_url\" content=\"{image_url}\">\n"
+                  "<meta property=\"og:image:type\" content=\"image/png\">\n"
+                  "<meta property=\"og:image:width\" content=\"600\">\n"
+                  "<meta property=\"og:image:height\" content=\"315\">\n"
+                  f"<meta property=\"og:image:alt\" content=\"{title_meta}\">\n"
+                  "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
+                  f"<meta name=\"twitter:title\" content=\"{title_meta}\">\n"
+                  f"<meta name=\"twitter:description\" content=\"{desc}\">\n"
+                  f"<meta name=\"twitter:image\" content=\"{image_url}\">\n"
+                  "<script>\n"
+                  "(function(){\n"
+                  "  var p=new URLSearchParams(location.search);\n"
+                  f"  p.set(\"disciplina\",\"{s}\");\n"
+                  "  location.replace(\"../../?\"+p.toString());\n"
+                  "})();\n"
+                  "</script>\n"
+                  f"<noscript><meta http-equiv=\"refresh\" content=\"0;url=../../?disciplina={s}\"></noscript>\n"
+                  "</head>\n"
+                  "<body></body>\n"
+                  "</html>\n"
+              )
               page_path=Path("disciplina")/s/"index.html"
               page_path.parent.mkdir(parents=True,exist_ok=True)
               page_path.write_text(page,encoding="utf-8")
