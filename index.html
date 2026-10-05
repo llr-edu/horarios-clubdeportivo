@@ -77,6 +77,14 @@ add("Jueves",[G3],["Gaita"],"Música");
 add("Jueves",[G3],["Robótica"],"Ciencias");
 add("Viernes",[G3],["Baloncesto"]);
 add("Sábado",[G3],["Encuentros deportivos"]);
+
+// Karate
+add("Lunes",[G5,G6],["Karate"]);
+add("Martes",[A1,A2],["Karate"]);
+add("Miércoles",[G1,G2],["Karate"]);
+add("Jueves",[A3,A4,A5],["Karate"]);
+add("Viernes",[G3,G4],["Karate"]);
+
 let selectedDay="",selectedGrade="",selectedDisc="";const slug=s=>normal(s).replace(/ /g,"-");const fromSlug=(v,items)=>items.find(x=>slug(x)===v)||"";const $=s=>document.querySelector(s),results=$("#results"),empty=$("#empty"),textInput=$("#text"),clearSearch=$("#clearSearch"),quick=$("#quick"),quickGrades=$("#quickGrades"),quickDays=$("#quickDays"),discSummary=$("#discSummary"),gradeSummary=$("#gradeSummary"),daySummary=$("#daySummary"),toast=$("#toast");
 const themeButtons=[...document.querySelectorAll(".theme-option")];
 function syncThemeButtons(){const theme=document.documentElement.dataset.theme||"dark";themeButtons.forEach(b=>{const active=b.dataset.themeChoice===theme;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))})}
