@@ -414,5 +414,95 @@ async function downloadCard(card,g){
     actions.style.display="";
   }
 }
+/* Puente de swipe cuando Horarios está embebido en el Dashboard del Club Deportivo */
+(function initEmbeddedModuleSwipe(){
+  if(window.parent===window) return;
+
+  let parentOrigin='*';
+  try{
+    if(document.referrer) parentOrigin=new URL(document.referrer).origin;
+  }catch(_e){}
+
+  const config={intent:9,directionRatio:1.14,edgeGuard:18};
+  let state=null;
+
+  function blockedTarget(target){
+    if(!(target instanceof Element)) return true;
+    return !!target.closest('input,textarea,select,button,a,summary,[contenteditable="true"],[data-swipe-ignore],.filter-summary');
+  }
+  function send(phase,extra={}){
+    try{
+      window.parent.postMessage(Object.assign({
+        type:'club-module-swipe',
+        phase,
+        viewportWidth:Math.max(1,window.innerWidth||document.documentElement.clientWidth||1)
+      },extra),parentOrigin);
+    }catch(_e){}
+  }
+
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1 || state || blockedTarget(event.target)) return;
+    const touch=event.touches[0];
+    if(touch.clientX<=config.edgeGuard || touch.clientX>=window.innerWidth-config.edgeGuard) return;
+    state={
+      startX:touch.clientX,
+      startY:touch.clientY,
+      lastX:touch.clientX,
+      lastTime:performance.now(),
+      velocityX:0,
+      axis:'',
+      started:false
+    };
+  },{passive:true});
+
+  document.addEventListener('touchmove',event=>{
+    if(!state || event.touches.length!==1) return;
+    const touch=event.touches[0];
+    const dx=touch.clientX-state.startX;
+    const dy=touch.clientY-state.startY;
+    const ax=Math.abs(dx), ay=Math.abs(dy);
+
+    if(!state.axis){
+      if(Math.max(ax,ay)<config.intent) return;
+      if(ay>ax*config.directionRatio){
+        state.axis='vertical';
+        return;
+      }
+      if(ax>ay*config.directionRatio || Math.max(ax,ay)>18){
+        state.axis='horizontal';
+      }else return;
+    }
+    if(state.axis!=='horizontal') return;
+
+    event.preventDefault();
+    const now=performance.now();
+    const elapsed=Math.max(1,now-state.lastTime);
+    state.velocityX=(touch.clientX-state.lastX)/elapsed;
+    state.lastX=touch.clientX;
+    state.lastTime=now;
+
+    if(!state.started){
+      state.started=true;
+      send('start',{dx});
+    }
+    send('move',{dx});
+  },{passive:false});
+
+  document.addEventListener('touchend',event=>{
+    if(!state) return;
+    const touch=event.changedTouches?.[0];
+    if(state.axis==='horizontal' && state.started){
+      const dx=touch?touch.clientX-state.startX:state.lastX-state.startX;
+      send('end',{dx,velocityX:state.velocityX});
+    }
+    state=null;
+  },{passive:true});
+
+  document.addEventListener('touchcancel',()=>{
+    if(state?.started) send('cancel');
+    state=null;
+  },{passive:true});
+})();
+
 (function(){const p=new URLSearchParams(location.search),hasSharedFilters=["grado","dia","disciplina"].some(k=>p.has(k));selectedGrade=fromSlug(p.get("grado")||"",GRADE_ORDER);selectedDay=fromSlug(p.get("dia")||"",DAY_ORDER);selectedDisc=fromSlug(p.get("disciplina")||"",disciplines);quickGrades.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",selectedGrade?b.dataset.grade===selectedGrade:b.dataset.grade==="Todos"));quick.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.disc===selectedDisc));if(selectedDay)quickDays.querySelectorAll(".chip").forEach(b=>b.classList.toggle("active",b.dataset.day===selectedDay));else{const t=getTodayName();if(!location.search&&DAY_ORDER.includes(t)){selectedDay=t;quickDays.querySelector('[data-day="Hoy"]').classList.add("active")}else quickDays.querySelector('[data-day="Todos"]').classList.add("active")}document.querySelectorAll(".filter-card").forEach(card=>setCardCollapsed(card,hasSharedFilters));syncClearSearch();render();scrollToInitialResults()})();
 </script></body></html>
